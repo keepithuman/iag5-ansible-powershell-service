@@ -1,0 +1,27 @@
+---
+# Group variables for Windows hosts
+
+# PowerShell script repository settings
+default_git_repo: "https://github.com/keepithuman/ansible-powershell-automation.git"
+default_script_path: "scripts/Manage-WindowsSystem.ps1"
+
+# Execution settings
+default_timeout: 300
+default_output_path: "C:\\temp\\ps-output"
+temp_directory: "C:\\temp\\ansible-powershell"
+
+# WinRM settings
+ansible_winrm_connection_timeout: 60
+ansible_winrm_read_timeout: 70
+ansible_winrm_operation_timeout: 60
+
+# PowerShell settings
+ansible_powershell_execution_policy: "RemoteSigned"
+
+# Common PowerShell parameters
+common_ps_parameters:
+  outputPath: "{{ default_output_path }}"
+
+# Logging settings
+enable_powershell_logging: true
+log_retention_days: 30
