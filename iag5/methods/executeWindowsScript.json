@@ -1,0 +1,204 @@
+{
+  "name": "executeWindowsScript",
+  "protocol": "REST",
+  "method": "POST",
+  "endpoint": "/execute-script",
+  "description": "Execute PowerShell script from Git repository on Windows machines using Ansible",
+  "summary": "Execute PowerShell Script",
+  "input": [
+    {
+      "name": "targets",
+      "type": "array",
+      "description": "List of target Windows hosts or groups",
+      "required": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "action",
+      "type": "string",
+      "description": "PowerShell script action to perform",
+      "required": true,
+      "enum": [
+        "ServiceManagement",
+        "FeatureManagement", 
+        "EventLogCheck",
+        "SystemInfo",
+        "FileOperations",
+        "RegistryCheck"
+      ]
+    },
+    {
+      "name": "parameters",
+      "type": "object",
+      "description": "Parameters to pass to the PowerShell script",
+      "required": false,
+      "properties": {
+        "serviceName": {
+          "type": "string",
+          "description": "Windows service name"
+        },
+        "serviceAction": {
+          "type": "string",
+          "enum": ["Start", "Stop", "Restart", "Status"]
+        },
+        "featureName": {
+          "type": "string",
+          "description": "Windows feature name"
+        },
+        "featureAction": {
+          "type": "string",
+          "enum": ["Enable", "Disable", "Status"]
+        },
+        "logName": {
+          "type": "string",
+          "description": "Event log name",
+          "default": "System"
+        },
+        "eventLevel": {
+          "type": "string",
+          "enum": ["Error", "Warning", "Information"],
+          "default": "Error"
+        },
+        "hours": {
+          "type": "integer",
+          "description": "Hours back to check events",
+          "default": 24
+        },
+        "path": {
+          "type": "string",
+          "description": "File or directory path"
+        },
+        "registryPath": {
+          "type": "string",
+          "description": "Registry key path"
+        },
+        "registryValue": {
+          "type": "string",
+          "description": "Registry value name"
+        },
+        "outputPath": {
+          "type": "string",
+          "description": "Output directory path",
+          "default": "C:\\temp\\ps-output"
+        }
+      }
+    },
+    {
+      "name": "options",
+      "type": "object",
+      "description": "Execution options",
+      "required": false,
+      "properties": {
+        "async": {
+          "type": "boolean",
+          "description": "Execute asynchronously",
+          "default": false
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Execution timeout in seconds",
+          "default": 300
+        },
+        "inventory": {
+          "type": "string",
+          "description": "Ansible inventory file or group",
+          "default": "windows"
+        },
+        "gitRepo": {
+          "type": "string",
+          "description": "Git repository URL for PowerShell scripts",
+          "default": "https://github.com/keepithuman/ansible-powershell-automation.git"
+        },
+        "scriptPath": {
+          "type": "string",
+          "description": "Path to script within Git repo",
+          "default": "scripts/Manage-WindowsSystem.ps1"
+        }
+      }
+    }
+  ],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean",
+      "description": "Indicates if the operation was successful"
+    },
+    {
+      "name": "message",
+      "type": "string",
+      "description": "Summary message of the operation"
+    },
+    {
+      "name": "executionId",
+      "type": "string",
+      "description": "Unique execution identifier"
+    },
+    {
+      "name": "results",
+      "type": "array",
+      "description": "Results from each target host",
+      "items": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string",
+            "description": "Target hostname"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["success", "failed", "unreachable"]
+          },
+          "output": {
+            "type": "string",
+            "description": "Script output or error message"
+          },
+          "changed": {
+            "type": "boolean",
+            "description": "Whether the operation made changes"
+          },
+          "duration": {
+            "type": "number",
+            "description": "Execution time in seconds"
+          }
+        }
+      }
+    },
+    {
+      "name": "summary",
+      "type": "object",
+      "description": "Execution summary statistics",
+      "properties": {
+        "totalHosts": {
+          "type": "integer"
+        },
+        "successful": {
+          "type": "integer"
+        },
+        "failed": {
+          "type": "integer"
+        },
+        "unreachable": {
+          "type": "integer"
+        },
+        "totalDuration": {
+          "type": "number"
+        }
+      }
+    }
+  ],
+  "query_object": {
+    "path": "/execute-script",
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "targets": "{targets}",
+      "action": "{action}",
+      "parameters": "{parameters}",
+      "options": "{options}"
+    }
+  }
+}
