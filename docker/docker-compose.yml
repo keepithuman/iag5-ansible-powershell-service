@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  iag5-powershell-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONPATH=/opt/iag5-powershell-service
+    volumes:
+      - ../ansible/inventory:/opt/iag5-powershell-service/ansible/inventory
+      - ansible_logs:/var/log
+      - ssh_keys:/root/.ssh
+    networks:
+      - iag5-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  ansible_logs:
+  ssh_keys:
+
+networks:
+  iag5-network:
+    driver: bridge

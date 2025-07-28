@@ -1,0 +1,9 @@
+# Python requirements for IAG5 Ansible PowerShell Service
+Flask==2.3.3
+PyYAML==6.0.1
+requests==2.31.0
+ansible==8.5.0
+ansible-core==2.15.5
+pywinrm==0.4.3
+requests-ntlm==1.2.0
+requests-credssp==2.0.0
