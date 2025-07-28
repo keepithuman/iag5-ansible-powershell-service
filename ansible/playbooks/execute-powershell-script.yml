@@ -1,0 +1,115 @@
+---
+- name: Execute PowerShell Script from Git Repository
+  hosts: "{{ target_hosts | default('windows') }}"
+  gather_facts: no
+  vars:
+    git_repo_url: "{{ git_repo | default('https://github.com/keepithuman/ansible-powershell-automation.git') }}"
+    script_path: "{{ script_file | default('scripts/Manage-WindowsSystem.ps1') }}"
+    temp_dir: "C:\\temp\\ansible-powershell"
+    execution_id: "{{ ansible_date_time.epoch }}"
+    
+  tasks:
+    - name: Set execution timestamp
+      set_fact:
+        execution_start: "{{ ansible_date_time.iso8601 }}"
+    
+    - name: Ensure temporary directory exists
+      win_file:
+        path: "{{ temp_dir }}"
+        state: directory
+      
+    - name: Check if Git is installed
+      win_command: git --version
+      register: git_check
+      failed_when: false
+      changed_when: false
+      
+    - name: Install Git if not present (using Chocolatey)
+      win_chocolatey:
+        name: git
+        state: present
+      when: git_check.rc != 0
+      
+    - name: Clone or update Git repository
+      win_shell: |
+        if (Test-Path "{{ temp_dir }}\\repo") {
+          cd "{{ temp_dir }}\\repo"
+          git fetch origin
+          git reset --hard origin/main
+          Write-Output "Repository updated"
+        } else {
+          git clone {{ git_repo_url }} "{{ temp_dir }}\\repo"
+          Write-Output "Repository cloned"
+        }
+      register: git_operation
+      
+    - name: Verify PowerShell script exists
+      win_stat:
+        path: "{{ temp_dir }}\\repo\\{{ script_path }}"
+      register: script_file_check
+      
+    - name: Fail if script doesn't exist
+      fail:
+        msg: "PowerShell script not found at {{ temp_dir }}\\repo\\{{ script_path }}"
+      when: not script_file_check.stat.exists
+      
+    - name: Build PowerShell command with parameters
+      set_fact:
+        ps_command: >-
+          Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force;
+          & "{{ temp_dir }}\\repo\\{{ script_path }}"
+          -Action "{{ ps_action }}"
+          {% if ps_parameters is defined %}
+          {% for key, value in ps_parameters.items() %}
+          {% if value is not none and value != '' %}
+          -{{ key | title }} "{{ value }}"
+          {% endif %}
+          {% endfor %}
+          {% endif %}
+          {% if output_path is defined %}-OutputPath "{{ output_path }}"{% endif %}
+      
+    - name: Execute PowerShell script
+      win_powershell:
+        script: "{{ ps_command }}"
+      register: ps_execution
+      ignore_errors: yes
+      async: "{{ async_timeout | default(300) }}"
+      poll: 5
+      
+    - name: Set execution end time
+      set_fact:
+        execution_end: "{{ ansible_date_time.iso8601 }}"
+        
+    - name: Calculate execution duration
+      set_fact:
+        execution_duration: "{{ (ansible_date_time.epoch | int) - (execution_start | to_datetime('%Y-%m-%dT%H:%M:%SZ')).strftime('%s') | int }}"
+      
+    - name: Format execution results
+      set_fact:
+        execution_result:
+          host: "{{ inventory_hostname }}"
+          status: "{{ 'success' if ps_execution.rc == 0 else 'failed' }}"
+          changed: "{{ ps_execution.changed | default(false) }}"
+          output: "{{ ps_execution.stdout | default('') }}"
+          error: "{{ ps_execution.stderr | default('') }}"
+          duration: "{{ execution_duration | int }}"
+          execution_id: "{{ execution_id }}"
+          start_time: "{{ execution_start }}"
+          end_time: "{{ execution_end }}"
+          
+    - name: Display execution summary
+      debug:
+        msg: |
+          Host: {{ inventory_hostname }}
+          Status: {{ execution_result.status }}
+          Duration: {{ execution_result.duration }}s
+          Changed: {{ execution_result.changed }}
+          {% if execution_result.error %}
+          Error: {{ execution_result.error }}
+          {% endif %}
+      
+    - name: Clean up temporary files (optional)
+      win_file:
+        path: "{{ temp_dir }}\\repo"
+        state: absent
+      when: cleanup_temp | default(false) | bool
