@@ -1,0 +1,40 @@
+{
+  "name": "healthCheck",
+  "protocol": "REST",
+  "method": "GET",
+  "endpoint": "/health",
+  "description": "Health check endpoint for IAG5 service",
+  "summary": "Service Health Check",
+  "input": [],
+  "output": [
+    {
+      "name": "status",
+      "type": "string",
+      "description": "Service health status"
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "description": "Health check timestamp"
+    },
+    {
+      "name": "version",
+      "type": "string",
+      "description": "Service version"
+    },
+    {
+      "name": "dependencies",
+      "type": "object",
+      "description": "Status of service dependencies",
+      "properties": {
+        "ansible": {"type": "boolean"},
+        "python": {"type": "boolean"},
+        "git": {"type": "boolean"}
+      }
+    }
+  ],
+  "query_object": {
+    "path": "/health",
+    "method": "GET"
+  }
+}

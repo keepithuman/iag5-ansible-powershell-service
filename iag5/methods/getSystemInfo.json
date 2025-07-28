@@ -1,0 +1,87 @@
+{
+  "name": "getSystemInfo",
+  "protocol": "REST",
+  "method": "POST",
+  "endpoint": "/system-info",
+  "description": "Gather comprehensive system information from Windows hosts",
+  "summary": "System Information Collection",
+  "input": [
+    {
+      "name": "targets",
+      "type": "array",
+      "description": "List of target Windows hosts",
+      "required": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "includeProcesses",
+      "type": "boolean",
+      "description": "Include top processes information",
+      "default": true
+    },
+    {
+      "name": "includeDiskInfo",
+      "type": "boolean",
+      "description": "Include disk space information",
+      "default": true
+    },
+    {
+      "name": "outputPath",
+      "type": "string",
+      "description": "Path to save detailed reports",
+      "default": "C:\\temp\\ps-output"
+    }
+  ],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "results",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "host": {"type": "string"},
+          "systemInfo": {
+            "type": "object",
+            "properties": {
+              "computerName": {"type": "string"},
+              "os": {"type": "string"},
+              "osVersion": {"type": "string"},
+              "totalMemoryGB": {"type": "number"},
+              "processor": {"type": "string"},
+              "lastBootTime": {"type": "string"}
+            }
+          },
+          "diskInfo": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "drive": {"type": "string"},
+                "sizeGB": {"type": "number"},
+                "freeSpaceGB": {"type": "number"},
+                "percentFree": {"type": "number"}
+              }
+            }
+          },
+          "reportPath": {"type": "string"}
+        }
+      }
+    }
+  ],
+  "query_object": {
+    "path": "/system-info",
+    "method": "POST",
+    "body": {
+      "targets": "{targets}",
+      "includeProcesses": "{includeProcesses}",
+      "includeDiskInfo": "{includeDiskInfo}",
+      "outputPath": "{outputPath}"
+    }
+  }
+}

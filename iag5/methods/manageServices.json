@@ -1,0 +1,69 @@
+{
+  "name": "manageServices",
+  "protocol": "REST",
+  "method": "POST",
+  "endpoint": "/manage-services",
+  "description": "Manage Windows services across multiple hosts",
+  "summary": "Windows Service Management",
+  "input": [
+    {
+      "name": "targets",
+      "type": "array",
+      "description": "List of target Windows hosts",
+      "required": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    {
+      "name": "serviceName",
+      "type": "string",
+      "description": "Windows service name",
+      "required": true
+    },
+    {
+      "name": "action",
+      "type": "string",
+      "description": "Action to perform on the service",
+      "required": true,
+      "enum": ["Start", "Stop", "Restart", "Status"]
+    },
+    {
+      "name": "timeout",
+      "type": "integer",
+      "description": "Operation timeout in seconds",
+      "default": 120
+    }
+  ],
+  "output": [
+    {
+      "name": "success",
+      "type": "boolean"
+    },
+    {
+      "name": "results",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "host": {"type": "string"},
+          "serviceName": {"type": "string"},
+          "previousStatus": {"type": "string"},
+          "currentStatus": {"type": "string"},
+          "changed": {"type": "boolean"},
+          "message": {"type": "string"}
+        }
+      }
+    }
+  ],
+  "query_object": {
+    "path": "/manage-services",
+    "method": "POST",
+    "body": {
+      "targets": "{targets}",
+      "serviceName": "{serviceName}",
+      "action": "{action}",
+      "timeout": "{timeout}"
+    }
+  }
+}
