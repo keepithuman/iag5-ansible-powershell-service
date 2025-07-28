@@ -1,0 +1,90 @@
+{
+  "name": "Windows PowerShell Automation Service",
+  "model": "PowerShellAutomation",
+  "type": "Rest",
+  "host": "localhost",
+  "port": 3000,
+  "base_path": "/api/v1/powershell",
+  "version": "1.0.0",
+  "cache_location": "none",
+  "encode_pathvars": true,
+  "save_metric": false,
+  "protocol": "http",
+  "authentication": {
+    "auth_method": "basic_user_pass",
+    "username": "admin",
+    "password": "admin",
+    "auth_field": "header.headers.Authorization",
+    "auth_field_format": "Basic {b64}{username}:{password}{/b64}",
+    "auth_logging": false
+  },
+  "healthcheck": {
+    "type": "startup",
+    "frequency": 30000,
+    "query_object": {
+      "path": "/health",
+      "method": "GET"
+    }
+  },
+  "throttle": {
+    "throttle_enabled": false,
+    "number_pronghorns": 1,
+    "sync_async": false,
+    "max_in_queue": 1000,
+    "concurrent_max": 1,
+    "expire_timeout": 0,
+    "avg_runtime": 200,
+    "priorities": [
+      {
+        "value": 0,
+        "percent": 100
+      }
+    ]
+  },
+  "request": {
+    "number_redirects": 0,
+    "number_retries": 3,
+    "limit_retry_error": [
+      404,
+      401,
+      403
+    ],
+    "failover_codes": [
+      404,
+      500,
+      502,
+      503,
+      504
+    ],
+    "attempt_timeout": 30000,
+    "global_request": {
+      "payload": {},
+      "uriOptions": {},
+      "addlHeaders": {},
+      "authData": {}
+    },
+    "healthcheck_on_timeout": true,
+    "return_raw": false,
+    "archiving": false,
+    "return_request": false
+  },
+  "ssl": {
+    "ecdhCurve": "",
+    "enabled": false,
+    "accept_invalid_cert": false,
+    "ca_file": "",
+    "key_file": "",
+    "cert_file": "",
+    "secure_protocol": "",
+    "ciphers": ""
+  },
+  "stub": false,
+  "description": "IAG5 service for executing PowerShell scripts on Windows machines using Ansible automation",
+  "keywords": [
+    "powershell",
+    "windows",
+    "ansible",
+    "automation",
+    "iag5"
+  ]
+}
